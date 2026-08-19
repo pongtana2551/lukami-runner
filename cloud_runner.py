@@ -2,7 +2,13 @@
 # One-shot cloud runner (GitHub Actions). Drains pending product jobs from the worker,
 # executes each via HEADLESS Fourthwall automation (login cookies from FW_COOKIES_JSON env),
 # then syncs the product list back. The workflow re-runs this every few minutes.
-import os, base64, tempfile, json, urllib.request, urllib.parse
+import os, base64, tempfile, json, urllib.request, urllib.parse, subprocess, sys
+# The CI container's `python` may lack the Playwright binding/browser — ensure both before use.
+try:
+    import playwright  # noqa: F401
+except ImportError:
+    subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "playwright"], check=False)
+    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=False)
 import _fw_create as fw
 
 BASE = "https://lukami-pay.akochanstar.workers.dev"
